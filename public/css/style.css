@@ -16,14 +16,16 @@ img {
     width: min(50%, 24em);
 }
 
-.c-main__start .c-keyboard,
-.c-main__start .c-attempt {
+.c-main__after-start .c-keyboard,
+.c-main__after-start .c-attempt {
+    user-select: none;
     pointer-events: none;
 }
 
-
-
-
+/* .c-main__before-start .c-keyboard,
+.c-main__before-start .c-attempt {
+     asd 
+} */
 
 .c-screen__box-zone {
     align-items: center;
@@ -120,7 +122,12 @@ img {
 }
 
 
-
+.c-keyboard__key .u-block {
+    color: #FFFFFF;
+    background-color: #084856;
+    border-color: #042127;
+    pointer-events: none;
+}
 
 .u-display-flex {
     display: flex;
