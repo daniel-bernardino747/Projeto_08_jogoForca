@@ -47,6 +47,8 @@ export default function App() {
     const [visibleWord, setVisibleWord] = useState(word);
     const [errorsCount, setErrorsCount] = useState(0);
 
+    const [attemptWord, setAttemptWord] = useState("");
+
     const [alphabet, setAlphabet] = useState([
         { id: 1, letter: "a", clicked: false }, { id: 2, letter: "b", clicked: false },
         { id: 3, letter: "c", clicked: false }, { id: 4, letter: "d", clicked: false },
@@ -62,7 +64,7 @@ export default function App() {
         { id: 23, letter: "w", clicked: false }, { id: 24, letter: "x", clicked: false },
         { id: 25, letter: "y", clicked: false }, { id: 26, letter: "z", clicked: false }]);
 
-    console.log(alphabet)
+    console.log('attempt:', attemptWord)
     console.log("word:", word);
     /* console.log("visible word:", visibleWord);
     console.log('word without accents:', wordWithoutAccents) */
@@ -115,6 +117,15 @@ export default function App() {
         }
         setVisibleWord(newVisibleWord);
     }
+
+    const attemptWorda = (e) => {
+        e.preventDefault();
+        const listAttemptWord = attemptWord.split("");
+
+        if ((JSON.stringify(word) === JSON.stringify(listAttemptWord))) {
+            console.log('AS PALAVRAS SÃO IGUAIS')
+        }
+    };
 
     function changeImage() {
         switch (errorsCount) {
@@ -206,11 +217,11 @@ export default function App() {
             </section>
 
             <section className="c-attempt u-display-flex">
-                <form className="c-attempt__form u-all-center u-display-flex">
+                <form onSubmit={attemptWorda} className="c-attempt__form u-all-center u-display-flex">
 
                     <label>Eu já sei a palavra!</label>
 
-                    <input type="text" placeholder="tenta a sorte"></input>
+                    <input type="text" placeholder="tenta a sorte" onChange={(e) => setAttemptWord(e.target.value)}></input>
 
                     <input type="submit" value="Enviar"></input>
 
