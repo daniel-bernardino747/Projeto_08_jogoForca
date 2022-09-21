@@ -45,7 +45,7 @@ export default function App() {
     const [word, setWord] = useState([])
     const [wordWithoutAccents, setWordWithoutAccents] = useState([])
     const [visibleWord, setVisibleWord] = useState(word);
-    const [bla, setBla] = useState(true);
+    const [errorsCount, setErrorsCount] = useState(0);
 
     const [alphabet, setAlphabet] = useState([
         { id: 1, letter: "a", clicked: false }, { id: 2, letter: "b", clicked: false },
@@ -62,12 +62,9 @@ export default function App() {
         { id: 23, letter: "w", clicked: false }, { id: 24, letter: "x", clicked: false },
         { id: 25, letter: "y", clicked: false }, { id: 26, letter: "z", clicked: false }]);
 
-
-    let errorsCount = 0;
-
     console.log(alphabet)
-    /* console.log("visible word:", visibleWord);
     console.log("word:", word);
+    /* console.log("visible word:", visibleWord);
     console.log('word without accents:', wordWithoutAccents) */
 
     const completeWord = (JSON.stringify(visibleWord) == JSON.stringify(word));
@@ -105,9 +102,9 @@ export default function App() {
             inWord = positionLetter !== -1;
 
             if (!bla) {
-                errorsCount++;
-                changeImage(errorsCount);
-                return console.log('NÃO TEM ESSA LETRA');
+                setErrorsCount(errorsCount + 1);
+                changeImage();
+                return console.log('NÃO TEM ESSA LETRA', errorsCount);
             }
 
             if (inWord) {
@@ -119,24 +116,24 @@ export default function App() {
         setVisibleWord(newVisibleWord);
     }
 
-    function changeImage(errors) {
-        switch (errors) {
-            case 1:
+    function changeImage() {
+        switch (errorsCount) {
+            case 0:
                 setImageHangman(hangman1);
                 break;
-            case 2:
+            case 1:
                 setImageHangman(hangman2);
                 break;
-            case 3:
+            case 2:
                 setImageHangman(hangman3);
                 break;
-            case 4:
+            case 3:
                 setImageHangman(hangman4);
                 break;
-            case 5:
+            case 4:
                 setImageHangman(hangman5);
                 break;
-            case 6:
+            case 5:
                 setImageHangman(hangman6);
                 break;
             default:
@@ -144,24 +141,13 @@ export default function App() {
         }
     }
 
-
     function keyPress(id) {
         const newAlpha = alphabet.map(letter => {
-            return letter.id === id ? { ...letter, clicked: true } : letter
+            return letter.id === id ? { ...letter, clicked: !letter.clicked } : letter
         })
 
         setAlphabet(newAlpha);
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
