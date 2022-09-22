@@ -46,9 +46,9 @@ export default function App() {
     const [wordWithoutAccents, setWordWithoutAccents] = useState([])
     const [visibleWord, setVisibleWord] = useState(word);
     const [errorsCount, setErrorsCount] = useState(0);
+
     const [games, setGames] = useState(0);
     const [finalGame, setFinalGame] = useState(false);
-    const [lose, setLose] = useState(false);
     const [titleEndGame, setTitleEndGame] = useState("");
 
     const [attemptWord, setAttemptWord] = useState("");
@@ -69,120 +69,7 @@ export default function App() {
         { id: 25, letter: "y", clicked: false }, { id: 26, letter: "z", clicked: false }]);
 
 
-    useEffect(() => { changeImage() }, [errorsCount])
-
     useEffect(() => {
-        setFinalGame(false);
-
-        const newAlpha = alphabet.map(letter => {
-            return letter.clicked === true ? { ...letter, clicked: !letter.clicked } : letter
-        });
-        setAlphabet(newAlpha)
-    }, [games])
-
-    console.log('attempt:', attemptWord)
-    console.log("word:", word);
-    /* console.log("visible word:", visibleWord);
-    console.log('word without accents:', wordWithoutAccents) */
-
-    if (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0) {
-        setFinalGame(true);
-        winGame()
-    }
-
-
-    function playGame() {
-        setImageHangman(hangman0)
-        setGames(games + 1);
-
-        const answers = sortWord();
-
-        setWord(answers[0]);
-        setVisibleWord(answers[1]);
-        setWordWithoutAccents(answers[2]);
-
-    }
-
-    function endGame() {
-        console.log('END GAME')
-        finalGame ? winGame() : loseGame()
-    }
-
-    function loseGame() {
-        setFinalGame(true)
-        setStartGame("c-main__after-start");
-        setAttemptWord('');
-        setVisibleWord(word);
-        setTitleEndGame('u-lose-game');
-        setWord([])
-        console.log('perdeu');
-    }
-
-    function winGame() {
-        setFinalGame(true)
-        setStartGame("c-main__after-start");
-        setAttemptWord('');
-        setVisibleWord(word);
-        setTitleEndGame('u-win-game');
-        setWord([])
-
-
-        console.log('ganhou');
-    }
-
-    function checkLetterInWord(letter) {
-
-        const newWord = wordWithoutAccents;
-        const newVisibleWord = visibleWord.map((x) => x);
-        const lengthWord = newVisibleWord.length;
-        console.log('TAMANHO DA PALAVRA:', lengthWord);
-        const bla = newWord.includes(letter);
-
-        for (let i = 0; i < lengthWord; i++) {
-            const positionLetter = newWord.indexOf(letter);
-            console.log('TAMANHO DA PALAVRA 2:', lengthWord);
-            console.log('POSIÇÃO DA LETRA:', positionLetter);
-
-            const inWord = positionLetter !== -1;
-
-            if (!bla) {
-                console.log('bla')
-                setErrorsCount(errorsCount + 1);
-
-                if (JSON.stringify(visibleWord) === JSON.stringify(word)) {
-                    setFinalGame(true);
-                    loseGame()
-                } else {
-                    return console.log('NÃO TEM ESSA LETRA', errorsCount)
-                }
-            }
-
-            if (inWord) {
-                newVisibleWord.splice(positionLetter, 1, word[positionLetter]);
-                newWord.splice(positionLetter, 1, '_');
-                console.log('newWord', newWord)
-
-            } else {
-                console.log('entrou aqui')
-            }
-        }
-        console.log('normal')
-        setVisibleWord(newVisibleWord);
-
-    }
-
-    const attemptWorda = (e) => {
-        e.preventDefault();
-        const listAttemptWord = attemptWord.split("");
-
-        if ((JSON.stringify(word) === JSON.stringify(listAttemptWord))) {
-            winGame();
-        } else {
-            loseGame();
-        }
-    };
-
-    function changeImage() {
         switch (errorsCount) {
             case 1:
                 setImageHangman(hangman1);
@@ -206,27 +93,121 @@ export default function App() {
             default:
                 setImageHangman(hangman0);
         }
+    }, [errorsCount])
+
+    useEffect(() => {
+        setFinalGame(false);
+        setImageHangman(hangman0);
+
+        changeClickState('clickTrue');
+
+    }, [games])
+
+    if (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0) {
+        setFinalGame(true);
+        winGame()
     }
 
-    function keyPress(id) {
-        const newAlpha = alphabet.map(letter => {
-            return letter.id === id ? { ...letter, clicked: !letter.clicked } : letter
-        })
+    function playGame() {
+        setGames(games + 1);
 
-        setAlphabet(newAlpha);
+        const answers = sortWord();
+        const [newWord, newVisibleWord, newWordWithoutAccents] = answers;
+
+        setWord(newWord);
+        setVisibleWord(newVisibleWord);
+        setWordWithoutAccents(newWordWithoutAccents);
     }
 
+    function loseGame() {
+        stopGame();
+        setTitleEndGame('u-lose-game');
+    }
 
+    function winGame() {
+        stopGame();
+        setTitleEndGame('u-win-game');
+    }
+
+    function stopGame() {
+        setFinalGame(true)
+        setStartGame("c-main__after-start");
+        setAttemptWord('');
+        setVisibleWord(word);
+        setWord([]);
+    }
+
+    function checkLetterInWord(letter) {
+
+        const wordToBeHit = wordWithoutAccents;
+        const newVisibleWord = visibleWord.map((x) => x);
+        const lengthWord = newVisibleWord.length;
+
+        const chosenLetterIsInWord = wordToBeHit.includes(letter);
+
+        for (let i = 0; i < lengthWord; i++) {
+
+            const positionLetter = wordToBeHit.indexOf(letter);
+
+            const letterExistAtPosition = positionLetter !== -1;
+
+            if (!chosenLetterIsInWord) {
+
+                setErrorsCount(errorsCount + 1);
+
+                if (JSON.stringify(visibleWord) === JSON.stringify(word)) {
+                    setFinalGame(true);
+                    loseGame();
+                }
+            }
+
+            if (letterExistAtPosition) {
+
+                newVisibleWord.splice(positionLetter, 1, word[positionLetter]);
+                wordToBeHit.splice(positionLetter, 1, '_');
+                console.log('wordToBeHit', wordToBeHit);
+
+            }
+        }
+        setVisibleWord(newVisibleWord);
+    }
+
+    const submitAttemptWord = (e) => {
+        e.preventDefault();
+        const listAttemptWord = attemptWord.split("");
+
+        (JSON.stringify(word) === JSON.stringify(listAttemptWord)) ? winGame() : loseGame();
+    };
+
+    function changeClickState(condition, desiredComparison) {
+        let newAlphabet;
+
+        if (condition === 'equalId') {
+
+            newAlphabet = alphabet.map(letter => {
+                return letter.id === desiredComparison ? { ...letter, clicked: !letter.clicked } : letter
+            });
+
+        } else if (condition === 'clickTrue') {
+
+            newAlphabet = alphabet.map(letter => {
+                return letter.clicked === true ? { ...letter, clicked: !letter.clicked } : letter
+            });
+
+        }
+
+        setAlphabet(newAlphabet);
+    }
 
     function Alphabet(props) {
 
-        const alphabet = props.abc;
+        const alphabet = props.listLetters;
 
         const listLetterInAlphabet =
             alphabet.map((l) =>
                 <li key={l.id}
                     className={l.clicked ? `u-block u-all-center u-display-flex` : `u-all-center u-display-flex`}
-                    onClick={() => checkLetterInWord(l.letter, keyPress(l.id))}
+                    onClick={() => checkLetterInWord(l.letter, changeClickState('equalId', l.id))}
                 >{l.letter}</li>);
 
         return (
@@ -251,6 +232,7 @@ export default function App() {
                             {startGame === "c-main__after-start"
                                 ? "Começar o jogo"
                                 : "Outra palavra"}
+
                         </button>
 
                     </div>
@@ -269,13 +251,13 @@ export default function App() {
             <section className="c-keyboard u-display-flex">
                 <ul className="c-keyboard__key u-all-center u-display-flex">
 
-                    <Alphabet abc={alphabet} />
+                    <Alphabet listLetters={alphabet} />
 
                 </ul>
             </section>
 
             <section className="c-attempt u-display-flex">
-                <form onSubmit={attemptWorda} className="c-attempt__form u-all-center u-display-flex">
+                <form onSubmit={submitAttemptWord} className="c-attempt__form u-all-center u-display-flex">
 
                     <label>Eu já sei a palavra!</label>
 
