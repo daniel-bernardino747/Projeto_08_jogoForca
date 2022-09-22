@@ -22,11 +22,6 @@ img {
     pointer-events: none;
 }
 
-/* .c-main__before-start .c-keyboard,
-.c-main__before-start .c-attempt {
-     asd 
-} */
-
 .c-screen__box-zone {
     align-items: center;
     justify-content: center;
@@ -127,6 +122,14 @@ img {
     background-color: #084856;
     border-color: #042127;
     pointer-events: none;
+}
+
+.c-screen__word .u-win-game {
+    color: #25d133
+}
+
+.c-screen__word .u-lose-game {
+    color: #d12525
 }
 
 .u-display-flex {

@@ -7,7 +7,7 @@ import hangman5 from "./assets/forca5.png";
 import hangman6 from "./assets/forca6.png";
 import palavras from "./palavras";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function replaceSpecialChars(str) {
     str = str.replace(/[àáâã]/, "a");
@@ -46,6 +46,10 @@ export default function App() {
     const [wordWithoutAccents, setWordWithoutAccents] = useState([])
     const [visibleWord, setVisibleWord] = useState(word);
     const [errorsCount, setErrorsCount] = useState(0);
+    const [games, setGames] = useState(0);
+    const [finalGame, setFinalGame] = useState(false);
+    const [lose, setLose] = useState(false);
+    const [titleEndGame, setTitleEndGame] = useState("");
 
     const [attemptWord, setAttemptWord] = useState("");
 
@@ -64,25 +68,33 @@ export default function App() {
         { id: 23, letter: "w", clicked: false }, { id: 24, letter: "x", clicked: false },
         { id: 25, letter: "y", clicked: false }, { id: 26, letter: "z", clicked: false }]);
 
+
+    useEffect(() => { changeImage() }, [errorsCount])
+
+    useEffect(() => {
+        setFinalGame(false);
+
+        const newAlpha = alphabet.map(letter => {
+            return letter.clicked === true ? { ...letter, clicked: !letter.clicked } : letter
+        });
+        setAlphabet(newAlpha)
+    }, [games])
+
     console.log('attempt:', attemptWord)
     console.log("word:", word);
     /* console.log("visible word:", visibleWord);
     console.log('word without accents:', wordWithoutAccents) */
 
-    const completeWord = (JSON.stringify(visibleWord) == JSON.stringify(word));
-
-    /* console.log(completeWord);
-    console.log(errorsCount); */
-
-    if (completeWord && word.length > 0) {
-        console.log("TÁ PRONTO");
+    if (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0) {
+        setFinalGame(true);
+        winGame()
     }
 
-    if (errorsCount === 6) {
-        console.log('PERDEU');
-    }
 
     function playGame() {
+        setImageHangman(hangman0)
+        setGames(games + 1);
+
         const answers = sortWord();
 
         setWord(answers[0]);
@@ -91,31 +103,72 @@ export default function App() {
 
     }
 
+    function endGame() {
+        console.log('END GAME')
+        finalGame ? winGame() : loseGame()
+    }
+
+    function loseGame() {
+        setFinalGame(true)
+        setStartGame("c-main__after-start");
+        setAttemptWord('');
+        setVisibleWord(word);
+        setTitleEndGame('u-lose-game');
+        setWord([])
+        console.log('perdeu');
+    }
+
+    function winGame() {
+        setFinalGame(true)
+        setStartGame("c-main__after-start");
+        setAttemptWord('');
+        setVisibleWord(word);
+        setTitleEndGame('u-win-game');
+        setWord([])
+
+
+        console.log('ganhou');
+    }
+
     function checkLetterInWord(letter) {
 
         const newWord = wordWithoutAccents;
         const newVisibleWord = visibleWord.map((x) => x);
         const lengthWord = newVisibleWord.length;
+        console.log('TAMANHO DA PALAVRA:', lengthWord);
         const bla = newWord.includes(letter);
-        let inWord = undefined;
 
         for (let i = 0; i < lengthWord; i++) {
             const positionLetter = newWord.indexOf(letter);
-            inWord = positionLetter !== -1;
+            console.log('TAMANHO DA PALAVRA 2:', lengthWord);
+            console.log('POSIÇÃO DA LETRA:', positionLetter);
+
+            const inWord = positionLetter !== -1;
 
             if (!bla) {
+                console.log('bla')
                 setErrorsCount(errorsCount + 1);
-                changeImage();
-                return console.log('NÃO TEM ESSA LETRA', errorsCount);
+
+                if (JSON.stringify(visibleWord) === JSON.stringify(word)) {
+                    setFinalGame(true);
+                    loseGame()
+                } else {
+                    return console.log('NÃO TEM ESSA LETRA', errorsCount)
+                }
             }
 
             if (inWord) {
                 newVisibleWord.splice(positionLetter, 1, word[positionLetter]);
                 newWord.splice(positionLetter, 1, '_');
-                console.log('i:', i)
+                console.log('newWord', newWord)
+
+            } else {
+                console.log('entrou aqui')
             }
         }
+        console.log('normal')
         setVisibleWord(newVisibleWord);
+
     }
 
     const attemptWorda = (e) => {
@@ -123,29 +176,32 @@ export default function App() {
         const listAttemptWord = attemptWord.split("");
 
         if ((JSON.stringify(word) === JSON.stringify(listAttemptWord))) {
-            console.log('AS PALAVRAS SÃO IGUAIS')
+            winGame();
+        } else {
+            loseGame();
         }
     };
 
     function changeImage() {
         switch (errorsCount) {
-            case 0:
+            case 1:
                 setImageHangman(hangman1);
                 break;
-            case 1:
+            case 2:
                 setImageHangman(hangman2);
                 break;
-            case 2:
+            case 3:
                 setImageHangman(hangman3);
                 break;
-            case 3:
+            case 4:
                 setImageHangman(hangman4);
                 break;
-            case 4:
+            case 5:
                 setImageHangman(hangman5);
                 break;
-            case 5:
+            case 6:
                 setImageHangman(hangman6);
+                loseGame();
                 break;
             default:
                 setImageHangman(hangman0);
@@ -192,7 +248,9 @@ export default function App() {
                             className="c-screen__button"
                             onClick={() => setStartGame("c-main__before-start", playGame())}
                         >
-                            Sortear palavra
+                            {startGame === "c-main__after-start"
+                                ? "Começar o jogo"
+                                : "Outra palavra"}
                         </button>
 
                     </div>
@@ -200,7 +258,7 @@ export default function App() {
                     <div className="u-all-center u-display-flex">
                         <ul className="c-screen__word u-all-center u-display-flex">
 
-                            {visibleWord.map((l) => <li>{l}</li>)}
+                            {visibleWord.map((l) => <li className={finalGame ? titleEndGame : ""}>{l}</li>)}
 
                         </ul>
                     </div>
@@ -221,7 +279,7 @@ export default function App() {
 
                     <label>Eu já sei a palavra!</label>
 
-                    <input type="text" placeholder="tenta a sorte" onChange={(e) => setAttemptWord(e.target.value)}></input>
+                    <input type="text" placeholder="tenta a sorte" onChange={(e) => setAttemptWord(e.target.value)} value={attemptWord}></input>
 
                     <input type="submit" value="Enviar"></input>
 
