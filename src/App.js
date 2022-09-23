@@ -5,9 +5,14 @@ import hangman3 from "./assets/forca3.png";
 import hangman4 from "./assets/forca4.png";
 import hangman5 from "./assets/forca5.png";
 import hangman6 from "./assets/forca6.png";
-import palavras from "./palavras";
+
+import palavras from "./database/palavras";
+import alfabeto from "./database/alfabeto";
 
 import { useState, useEffect } from "react";
+
+import GlobalStyle from "./GlobalStyle";
+import styled, { css } from "styled-components";
 
 function replaceSpecialChars(str) {
     str = str.replace(/[àáâã]/, "a");
@@ -21,11 +26,6 @@ function replaceSpecialChars(str) {
 }
 
 function sortWord() {
-    const answer = window.confirm('Deseja começar um novo jogo?');
-
-    if (!answer) {
-        return
-    }
 
     const randomNumber = Math.floor(Math.random() * palavras.length);
     const newWord = palavras[randomNumber];
@@ -36,14 +36,14 @@ function sortWord() {
     listLetters.map(() => listVisible.push("_"));
 
     return [listLetters, listVisible, lettersWithoutAccents];
-}
+};
 
 export default function App() {
     const [imageHangman, setImageHangman] = useState(hangman0);
-    const [startGame, setStartGame] = useState("c-main__after-start");
+    const [startGame, setStartGame] = useState("start");
 
-    const [word, setWord] = useState([])
-    const [wordWithoutAccents, setWordWithoutAccents] = useState([])
+    const [word, setWord] = useState([]);
+    const [wordWithoutAccents, setWordWithoutAccents] = useState([]);
     const [visibleWord, setVisibleWord] = useState(word);
     const [errorsCount, setErrorsCount] = useState(0);
 
@@ -53,21 +53,24 @@ export default function App() {
 
     const [attemptWord, setAttemptWord] = useState("");
 
-    const [alphabet, setAlphabet] = useState([
-        { id: 1, letter: "a", clicked: false }, { id: 2, letter: "b", clicked: false },
-        { id: 3, letter: "c", clicked: false }, { id: 4, letter: "d", clicked: false },
-        { id: 5, letter: "e", clicked: false }, { id: 6, letter: "f", clicked: false },
-        { id: 7, letter: "g", clicked: false }, { id: 8, letter: "h", clicked: false },
-        { id: 9, letter: "i", clicked: false }, { id: 10, letter: "j", clicked: false },
-        { id: 11, letter: "k", clicked: false }, { id: 12, letter: "l", clicked: false },
-        { id: 13, letter: "m", clicked: false }, { id: 14, letter: "n", clicked: false },
-        { id: 15, letter: "o", clicked: false }, { id: 16, letter: "p", clicked: false },
-        { id: 17, letter: "q", clicked: false }, { id: 18, letter: "r", clicked: false },
-        { id: 19, letter: "s", clicked: false }, { id: 20, letter: "t", clicked: false },
-        { id: 21, letter: "u", clicked: false }, { id: 22, letter: "v", clicked: false },
-        { id: 23, letter: "w", clicked: false }, { id: 24, letter: "x", clicked: false },
-        { id: 25, letter: "y", clicked: false }, { id: 26, letter: "z", clicked: false }]);
+    const [alphabet, setAlphabet] = useState(alfabeto);
 
+    const gameWonByLetters = (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0);
+
+    const stopGame = () => {
+        setFinalGame(true);
+        setStartGame("start");
+        setAttemptWord('');
+        setVisibleWord(word);
+        setWord([]);
+    };
+
+    const submitAttemptWord = (e) => {
+        e.preventDefault();
+        const listAttemptWord = attemptWord.split("");
+
+        (JSON.stringify(word) === JSON.stringify(listAttemptWord)) ? winGame() : loseGame();
+    };
 
     useEffect(() => {
         switch (errorsCount) {
@@ -92,8 +95,8 @@ export default function App() {
                 break;
             default:
                 setImageHangman(hangman0);
-        }
-    }, [errorsCount])
+        };
+    }, [errorsCount]);
 
     useEffect(() => {
         setFinalGame(false);
@@ -101,12 +104,13 @@ export default function App() {
 
         changeClickState('clickTrue');
 
-    }, [games])
+    }, [games]);
 
-    if (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0) {
+
+    if (gameWonByLetters) {
         setFinalGame(true);
-        winGame()
-    }
+        winGame();
+    };
 
     function playGame() {
         setGames(games + 1);
@@ -117,38 +121,29 @@ export default function App() {
         setWord(newWord);
         setVisibleWord(newVisibleWord);
         setWordWithoutAccents(newWordWithoutAccents);
-    }
+    };
 
     function loseGame() {
         stopGame();
-        setTitleEndGame('u-lose-game');
-    }
+        setTitleEndGame('lose');
+    };
 
     function winGame() {
         stopGame();
-        setTitleEndGame('u-win-game');
-    }
-
-    function stopGame() {
-        setFinalGame(true)
-        setStartGame("c-main__after-start");
-        setAttemptWord('');
-        setVisibleWord(word);
-        setWord([]);
-    }
+        setTitleEndGame('win');
+    };
 
     function checkLetterInWord(letter) {
 
-        const wordToBeHit = wordWithoutAccents;
         const newVisibleWord = visibleWord.map((x) => x);
-        const lengthWord = newVisibleWord.length;
-
+        const wordToBeHit = wordWithoutAccents;
         const chosenLetterIsInWord = wordToBeHit.includes(letter);
+
+        const lengthWord = newVisibleWord.length;
 
         for (let i = 0; i < lengthWord; i++) {
 
             const positionLetter = wordToBeHit.indexOf(letter);
-
             const letterExistAtPosition = positionLetter !== -1;
 
             if (!chosenLetterIsInWord) {
@@ -156,10 +151,10 @@ export default function App() {
                 setErrorsCount(errorsCount + 1);
 
                 if (JSON.stringify(visibleWord) === JSON.stringify(word)) {
-                    setFinalGame(true);
+                    setFinalGame("true");
                     loseGame();
-                }
-            }
+                };
+            };
 
             if (letterExistAtPosition) {
 
@@ -167,16 +162,9 @@ export default function App() {
                 wordToBeHit.splice(positionLetter, 1, '_');
                 console.log('wordToBeHit', wordToBeHit);
 
-            }
-        }
+            };
+        };
         setVisibleWord(newVisibleWord);
-    }
-
-    const submitAttemptWord = (e) => {
-        e.preventDefault();
-        const listAttemptWord = attemptWord.split("");
-
-        (JSON.stringify(word) === JSON.stringify(listAttemptWord)) ? winGame() : loseGame();
     };
 
     function changeClickState(condition, desiredComparison) {
@@ -194,10 +182,10 @@ export default function App() {
                 return letter.clicked === true ? { ...letter, clicked: !letter.clicked } : letter
             });
 
-        }
+        };
 
         setAlphabet(newAlphabet);
-    }
+    };
 
     function Alphabet(props) {
 
@@ -205,10 +193,13 @@ export default function App() {
 
         const listLetterInAlphabet =
             alphabet.map((l) =>
-                <li key={l.id}
-                    className={l.clicked ? `u-block u-all-center u-display-flex` : `u-all-center u-display-flex`}
+                <Letter
+                    key={l.id}
+                    clicked={l.clicked}
                     onClick={() => checkLetterInWord(l.letter, changeClickState('equalId', l.id))}
-                >{l.letter}</li>);
+                >
+                    {l.letter}
+                </Letter>);
 
         return (
             <>{listLetterInAlphabet}</>
@@ -216,58 +207,274 @@ export default function App() {
     };
 
     return (
-        <main className={startGame}>
-
-            <section className="c-screen u-display-flex">
+        <>
+            <Box_Screen>
 
                 <img src={imageHangman} alt="Hangman Game" />
 
-                <div className="c-screen__box-zone u-display-flex">
-                    <div className="u-all-center u-display-flex">
+                <Interface>
+                    <Wrapper>
+                        <Button onClick={() =>
+                            window.confirm('Deseja começar um novo jogo?')
+                                ? setStartGame("stop", playGame())
+                                : alert('Volte sempre para jogarmos mais!')}>
 
-                        <button
-                            className="c-screen__button"
-                            onClick={() => setStartGame("c-main__before-start", playGame())}
-                        >
-                            {startGame === "c-main__after-start"
-                                ? "Começar o jogo"
-                                : "Outra palavra"}
+                            {startGame === "start" ? "Começar o jogo" : "Outra palavra"}
 
-                        </button>
+                        </Button>
+                    </Wrapper>
 
-                    </div>
+                    <Wrapper>
+                        <Word>
+                            {visibleWord.map(
+                                (l, index) =>
+                                    <LetterWord key={index} visible={finalGame ? titleEndGame : ""}>
+                                        {l}
+                                    </LetterWord>
+                            )}
+                        </Word>
+                    </Wrapper>
+                </Interface>
 
-                    <div className="u-all-center u-display-flex">
-                        <ul className="c-screen__word u-all-center u-display-flex">
+            </Box_Screen>
 
-                            {visibleWord.map((l) => <li className={finalGame ? titleEndGame : ""}>{l}</li>)}
-
-                        </ul>
-                    </div>
-                </div>
-
-            </section>
-
-            <section className="c-keyboard u-display-flex">
-                <ul className="c-keyboard__key u-all-center u-display-flex">
-
+            <Box_Keys block={startGame}>
+                <Keyboard>
                     <Alphabet listLetters={alphabet} />
+                </Keyboard>
+            </Box_Keys>
 
-                </ul>
-            </section>
+            <Box_Attempt block={startGame}>
+                <Form onSubmit={submitAttemptWord}>
 
-            <section className="c-attempt u-display-flex">
-                <form onSubmit={submitAttemptWord} className="c-attempt__form u-all-center u-display-flex">
+                    <Text>Eu já sei a palavra!</Text>
+                    <Attempt
+                        placeholder="tenta a sorte"
+                        onChange={(e) => setAttemptWord(e.target.value)}
+                        value={attemptWord}>
+                    </Attempt>
+                    <Submit value="Enviar"></Submit>
 
-                    <label>Eu já sei a palavra!</label>
+                </Form>
+            </Box_Attempt>
 
-                    <input type="text" placeholder="tenta a sorte" onChange={(e) => setAttemptWord(e.target.value)} value={attemptWord}></input>
-
-                    <input type="submit" value="Enviar"></input>
-
-                </form>
-            </section>
-
-        </main>
+            <GlobalStyle />
+        </>
     );
 };
+
+const Box_Screen = styled.section`
+    display: flex;
+
+    img {
+        width: min(50%, 24em);
+    }
+`;
+
+const Interface = styled.div`
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+`;
+
+const Wrapper = styled.div`
+    height: 50%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const Button = styled.button`
+    background-color: #21dd31;
+    border: none;
+    border-radius: 0.5em;
+    height: 3em;
+    width: 14em;
+
+    &:active {
+        background-color: #25d133;
+    }
+
+    @media (max-width:515px) {
+        width: 8em;
+    }
+`;
+
+const Word = styled.ul`
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+`;
+
+const Text = styled.p`
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 400;
+    margin: 0.2625em;
+`;
+
+const LetterWord = styled.li`
+    font-size: clamp(1em, 10vw, 1.5em);
+    font-weight: 500;
+    margin: 0.2625em;
+
+    ${(props) => {
+        switch (props.visible) {
+            case "win":
+                return css`
+                    font-family: 'Ubuntu', sans-serif;
+                    font-size: clamp(1em, 10vw, 1.5em);
+                    font-weight: 500;
+                    margin: 0.2625em;
+                    color: #25d133;
+                `;
+            case "lose":
+                return css`
+                    font-family: 'Ubuntu', sans-serif;
+                    font-size: clamp(1em, 10vw, 1.5em);
+                    font-weight: 500;
+                    margin: 0.2625em;
+                    color: #d12525;
+                `;
+            default:
+                return css`
+                    font-family: 'Ubuntu', sans-serif;
+                    font-size: clamp(1em, 10vw, 1.5em);
+                    font-weight: 500;
+                    margin: 0.2625em;
+                `;
+        };
+    }};
+`;
+
+
+const Box_Keys = styled.section`
+    height: 6em;
+    margin: 1em 0;
+    width: 100%;
+
+    display: flex;
+
+    pointer-events: ${props => props.block === 'start' ? 'none' : 'auto'}; 
+
+    @media (max-width:736px) {
+        height: 10em;
+    }
+
+    @media (max-width:515px) {
+        height: 14em;
+    }
+
+    @media (max-width:398px) {
+        height: 18em;
+    }
+
+    @media (max-width:286px) {
+        height: 22em;
+    }
+`;
+
+const Keyboard = styled.ul`
+    height: 7em;
+    flex-wrap: wrap;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    @media (max-width:736px) {
+        height: 10em;
+    }
+
+    @media (max-width:515px) {
+        height: 14em;
+    }
+
+    @media (max-width:398px) {
+        height: 18em;
+    }
+
+    @media (max-width:286px) {
+        height: 22em;
+    }
+`;
+
+const Letter = styled.li`
+    background-color: #62e1fd;
+    border: 0.0625em solid #12c5ed;
+    border-radius: 0.2em;
+    height: 3em;
+    margin: 0.2625em;
+    width: 3em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    user-select: none;
+
+    &:active {
+        border: 0.0625em solid #06809b;
+    }
+
+    ${(props) => {
+        switch (props.clicked) {
+            case true:
+                return css`
+                    color: #FFFFFF;
+                    background-color: #084856;
+                    border-color: #042127;
+                    pointer-events: none;  
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: 500;
+                    margin: 0.2625em; 
+                `;
+            case false:
+                return css`
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: 500;
+                    margin: 0.2625em;
+                `
+
+        };
+    }};
+`;
+
+
+const Box_Attempt = styled.section`
+    height: 3em;
+    display: flex;
+
+    pointer-events: ${props => props.block === 'start' ? 'none' : 'auto'}; 
+`;
+
+const Form = styled.form`
+    flex-wrap: wrap;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    * {
+        margin: 0 0.5em;
+    }
+`;
+
+const Attempt = styled.input.attrs({ type: "text" })`
+    &:focus-visible {
+            outline: 0px;
+        }
+`;
+
+const Submit = styled.input.attrs({ type: "submit" })`
+    border-radius: 0.2em;
+    border: none;
+    background-color: #9a9a9a;
+    height: 1.5em;
+`;
