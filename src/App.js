@@ -63,6 +63,7 @@ export default function App() {
         setAttemptWord('');
         setVisibleWord(word);
         setWord([]);
+        changeClickState('blockLetters');
     };
 
     const submitAttemptWord = (e) => {
@@ -101,8 +102,7 @@ export default function App() {
     useEffect(() => {
         setFinalGame(false);
         setImageHangman(hangman0);
-
-        changeClickState('clickTrue');
+        setErrorsCount(0)
 
     }, [games]);
 
@@ -113,7 +113,7 @@ export default function App() {
     };
 
     function playGame() {
-        setGames(games + 1);
+        setGames(games + 1, changeClickState('clickTrue'));
 
         const answers = sortWord();
         const [newWord, newVisibleWord, newWordWithoutAccents] = answers;
@@ -182,7 +182,13 @@ export default function App() {
                 return letter.clicked === true ? { ...letter, clicked: !letter.clicked } : letter
             });
 
-        };
+        } else if (condition === 'blockLetters') {
+            newAlphabet = alphabet.map(letter => {
+                return { ...letter, clicked: true }
+            });
+        }
+
+        ;
 
         setAlphabet(newAlphabet);
     };
@@ -194,6 +200,7 @@ export default function App() {
         const listLetterInAlphabet =
             alphabet.map((l) =>
                 <Letter
+                    data-identifier="letter"
                     key={l.id}
                     clicked={l.clicked}
                     onClick={() => checkLetterInWord(l.letter, changeClickState('equalId', l.id))}
@@ -210,11 +217,11 @@ export default function App() {
         <>
             <Box_Screen>
 
-                <img src={imageHangman} alt="Hangman Game" />
+                <img data-identifier="game-image" src={imageHangman} alt="Hangman Game" />
 
                 <Interface>
                     <Wrapper>
-                        <Button onClick={() =>
+                        <Button data-identifier="choose-word" onClick={() =>
                             window.confirm('Deseja começar um novo jogo?')
                                 ? setStartGame("stop", playGame())
                                 : alert('Volte sempre para jogarmos mais!')}>
@@ -225,7 +232,7 @@ export default function App() {
                     </Wrapper>
 
                     <Wrapper>
-                        <Word>
+                        <Word data-identifier="word">
                             {visibleWord.map(
                                 (l, index) =>
                                     <LetterWord key={index} visible={finalGame ? titleEndGame : ""}>
@@ -249,11 +256,12 @@ export default function App() {
 
                     <Text>Eu já sei a palavra!</Text>
                     <Attempt
+                        data-identifier="type-guess"
                         placeholder="tenta a sorte"
                         onChange={(e) => setAttemptWord(e.target.value)}
                         value={attemptWord}>
                     </Attempt>
-                    <Submit value="Enviar"></Submit>
+                    <Submit data-identifier="guess-button" value="Chutar"></Submit>
 
                 </Form>
             </Box_Attempt>
