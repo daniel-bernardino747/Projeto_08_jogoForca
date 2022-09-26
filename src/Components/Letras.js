@@ -1,7 +1,6 @@
 import styled, { css } from "styled-components";
 
-
-export default function Ble(props) {
+export default function Letras(props) {
     const { stateStart, listABC, functionCheck, functionClick } = props;
 
     function Alphabet(props) {
@@ -121,8 +120,7 @@ const Letter = styled.li`
                     font-family: 'Ubuntu', sans-serif;
                     font-weight: 500;
                     margin: 0.2625em;
-                `
-
+                `;
         };
     }};
 `;

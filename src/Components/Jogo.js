@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-export default function Bla(props) {
+export default function Jogo(props) {
     const { image, setStateStart, stateStart, functionPlay, wordVisible, stateEndGame, stateTitleEnd } = props;
 
     return (

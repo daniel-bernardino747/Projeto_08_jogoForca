@@ -1,13 +1,13 @@
-import hangman0 from "./assets/forca0.png";
-import hangman1 from "./assets/forca1.png";
-import hangman2 from "./assets/forca2.png";
-import hangman3 from "./assets/forca3.png";
-import hangman4 from "./assets/forca4.png";
-import hangman5 from "./assets/forca5.png";
-import hangman6 from "./assets/forca6.png";
+import hangman0 from "../assets/forca0.png";
+import hangman1 from "../assets/forca1.png";
+import hangman2 from "../assets/forca2.png";
+import hangman3 from "../assets/forca3.png";
+import hangman4 from "../assets/forca4.png";
+import hangman5 from "../assets/forca5.png";
+import hangman6 from "../assets/forca6.png";
 
-import palavras from "./database/palavras";
-import alfabeto from "./database/alfabeto";
+import palavras from "../database/palavras";
+import alfabeto from "../database/alfabeto";
 
 import { useState, useEffect } from "react";
 
@@ -16,31 +16,8 @@ import Letras from "./Letras";
 import Chute from "./Chute";
 import GlobalStyle from "./GlobalStyle";
 
-function replaceSpecialChars(str) {
-    str = str.replace(/[àáâã]/, "a");
-    str = str.replace(/[èéê]/, "e");
-    str = str.replace(/[ìí]/, "i");
-    str = str.replace(/[òóôõ]/, "o");
-    str = str.replace(/[ùúûũü]/, "u");
-    str = str.replace(/[ç]/, "c");
-
-    return str.replace(/[^a-z0-9]/gi, '');
-}
-
-function sortWord() {
-
-    const randomNumber = Math.floor(Math.random() * palavras.length);
-    const newWord = palavras[randomNumber];
-    const listLetters = newWord.split("");
-    const listVisible = [];
-    const lettersWithoutAccents = replaceSpecialChars(newWord).split("");
-
-    listLetters.map(() => listVisible.push("_"));
-
-    return [listLetters, listVisible, lettersWithoutAccents];
-};
-
 export default function App() {
+
     const [imageHangman, setImageHangman] = useState(hangman0);
     const [startGame, setStartGame] = useState("start");
 
@@ -59,6 +36,10 @@ export default function App() {
 
     const gameWonByLetters = (JSON.stringify(visibleWord) === JSON.stringify(word) && word.length > 0);
 
+
+
+
+
     const stopGame = () => {
         setFinalGame(true);
         setStartGame("start");
@@ -73,6 +54,31 @@ export default function App() {
         const listAttemptWord = attemptWord.split("");
 
         (JSON.stringify(word) === JSON.stringify(listAttemptWord)) ? winGame() : loseGame();
+    };
+
+    const sortWord = (dataWords) => {
+        const randomNumber = Math.floor(Math.random() * dataWords.length);
+        const newWord = dataWords[randomNumber];
+
+        const replaceSpecialChars = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+        const lettersWithoutAccents = replaceSpecialChars(newWord).split("");
+
+        const listLetters = newWord.split("");
+        const listVisible = [];
+        listLetters.map(() => listVisible.push("_"));
+
+        return [listLetters, listVisible, lettersWithoutAccents];
+    };
+
+    const playGame = () => {
+        setGames(games + 1, changeClickState('clickTrue'));
+
+        const answers = sortWord(palavras);
+        const [newWord, newVisibleWord, newWordWithoutAccents] = answers;
+
+        setWord(newWord);
+        setVisibleWord(newVisibleWord);
+        setWordWithoutAccents(newWordWithoutAccents);
     };
 
     useEffect(() => {
@@ -104,7 +110,7 @@ export default function App() {
     useEffect(() => {
         setFinalGame(false);
         setImageHangman(hangman0);
-        setErrorsCount(0)
+        setErrorsCount(0);
 
     }, [games]);
 
@@ -112,17 +118,6 @@ export default function App() {
     if (gameWonByLetters) {
         setFinalGame(true);
         winGame();
-    };
-
-    function playGame() {
-        setGames(games + 1, changeClickState('clickTrue'));
-
-        const answers = sortWord();
-        const [newWord, newVisibleWord, newWordWithoutAccents] = answers;
-
-        setWord(newWord);
-        setVisibleWord(newVisibleWord);
-        setWordWithoutAccents(newWordWithoutAccents);
     };
 
     function loseGame() {
@@ -188,9 +183,7 @@ export default function App() {
             newAlphabet = alphabet.map(letter => {
                 return { ...letter, clicked: true }
             });
-        }
-
-        ;
+        };
 
         setAlphabet(newAlphabet);
     };

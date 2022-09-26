@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export default function Bli(props) {
+export default function Chute(props) {
     const { stateStart, functionSubmit, setStateAttempt, stateAttempt } = props;
 
     return (
