@@ -11,8 +11,10 @@ import alfabeto from "./database/alfabeto";
 
 import { useState, useEffect } from "react";
 
+import Jogo from "./Jogo";
+import Letras from "./Letras";
+import Chute from "./Chute";
 import GlobalStyle from "./GlobalStyle";
-import styled, { css } from "styled-components";
 
 function replaceSpecialChars(str) {
     str = str.replace(/[àáâã]/, "a");
@@ -193,296 +195,34 @@ export default function App() {
         setAlphabet(newAlphabet);
     };
 
-    function Alphabet(props) {
-
-        const alphabet = props.listLetters;
-
-        const listLetterInAlphabet =
-            alphabet.map((l) =>
-                <Letter
-                    data-identifier="letter"
-                    key={l.id}
-                    clicked={l.clicked}
-                    onClick={() => checkLetterInWord(l.letter, changeClickState('equalId', l.id))}
-                >
-                    {l.letter}
-                </Letter>);
-
-        return (
-            <>{listLetterInAlphabet}</>
-        );
-    };
-
     return (
         <>
-            <Box_Screen>
+            <Jogo
+                image={imageHangman}
+                setStateStart={setStartGame}
+                stateStart={startGame}
+                functionPlay={playGame}
+                wordVisible={visibleWord}
+                stateEndGame={finalGame}
+                stateTitleEnd={titleEndGame}
+            />
 
-                <img data-identifier="game-image" src={imageHangman} alt="Hangman Game" />
+            <Letras
+                stateStart={startGame}
+                listABC={alphabet}
+                functionCheck={checkLetterInWord}
+                functionClick={changeClickState}
+            />
 
-                <Interface>
-                    <Wrapper>
-                        <Button data-identifier="choose-word" onClick={() =>
-                            window.confirm('Deseja começar um novo jogo?')
-                                ? setStartGame("stop", playGame())
-                                : alert('Volte sempre para jogarmos mais!')}>
+            <Chute
+                stateStart={startGame}
+                functionSubmit={submitAttemptWord}
+                setStateAttempt={setAttemptWord}
+                stateAttempt={attemptWord}
 
-                            {startGame === "start" ? "Começar o jogo" : "Outra palavra"}
-
-                        </Button>
-                    </Wrapper>
-
-                    <Wrapper>
-                        <Word data-identifier="word">
-                            {visibleWord.map(
-                                (l, index) =>
-                                    <LetterWord key={index} visible={finalGame ? titleEndGame : ""}>
-                                        {l}
-                                    </LetterWord>
-                            )}
-                        </Word>
-                    </Wrapper>
-                </Interface>
-
-            </Box_Screen>
-
-            <Box_Keys block={startGame}>
-                <Keyboard>
-                    <Alphabet listLetters={alphabet} />
-                </Keyboard>
-            </Box_Keys>
-
-            <Box_Attempt block={startGame}>
-                <Form onSubmit={submitAttemptWord}>
-
-                    <Text>Eu já sei a palavra!</Text>
-                    <Attempt
-                        data-identifier="type-guess"
-                        placeholder="tenta a sorte"
-                        onChange={(e) => setAttemptWord(e.target.value)}
-                        value={attemptWord}>
-                    </Attempt>
-                    <Submit data-identifier="guess-button" value="Chutar"></Submit>
-
-                </Form>
-            </Box_Attempt>
+            />
 
             <GlobalStyle />
         </>
     );
 };
-
-const Box_Screen = styled.section`
-    display: flex;
-
-    img {
-        width: min(50%, 24em);
-    }
-`;
-
-const Interface = styled.div`
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    width: 100%;
-`;
-
-const Wrapper = styled.div`
-    height: 50%;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-`;
-
-const Button = styled.button`
-    background-color: #21dd31;
-    border: none;
-    border-radius: 0.5em;
-    height: 3em;
-    width: 14em;
-
-    &:active {
-        background-color: #25d133;
-    }
-
-    @media (max-width:515px) {
-        width: 8em;
-    }
-`;
-
-const Word = styled.ul`
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-`;
-
-const Text = styled.p`
-    font-family: 'Ubuntu', sans-serif;
-    font-weight: 400;
-    margin: 0.2625em;
-`;
-
-const LetterWord = styled.li`
-    font-size: clamp(1em, 10vw, 1.5em);
-    font-weight: 500;
-    margin: 0.2625em;
-
-    ${(props) => {
-        switch (props.visible) {
-            case "win":
-                return css`
-                    font-family: 'Ubuntu', sans-serif;
-                    font-size: clamp(1em, 10vw, 1.5em);
-                    font-weight: 500;
-                    margin: 0.2625em;
-                    color: #25d133;
-                `;
-            case "lose":
-                return css`
-                    font-family: 'Ubuntu', sans-serif;
-                    font-size: clamp(1em, 10vw, 1.5em);
-                    font-weight: 500;
-                    margin: 0.2625em;
-                    color: #d12525;
-                `;
-            default:
-                return css`
-                    font-family: 'Ubuntu', sans-serif;
-                    font-size: clamp(1em, 10vw, 1.5em);
-                    font-weight: 500;
-                    margin: 0.2625em;
-                `;
-        };
-    }};
-`;
-
-
-const Box_Keys = styled.section`
-    height: 6em;
-    margin: 1em 0;
-    width: 100%;
-
-    display: flex;
-
-    pointer-events: ${props => props.block === 'start' ? 'none' : 'auto'}; 
-
-    @media (max-width:736px) {
-        height: 10em;
-    }
-
-    @media (max-width:515px) {
-        height: 14em;
-    }
-
-    @media (max-width:398px) {
-        height: 18em;
-    }
-
-    @media (max-width:286px) {
-        height: 22em;
-    }
-`;
-
-const Keyboard = styled.ul`
-    height: 7em;
-    flex-wrap: wrap;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-
-    @media (max-width:736px) {
-        height: 10em;
-    }
-
-    @media (max-width:515px) {
-        height: 14em;
-    }
-
-    @media (max-width:398px) {
-        height: 18em;
-    }
-
-    @media (max-width:286px) {
-        height: 22em;
-    }
-`;
-
-const Letter = styled.li`
-    background-color: #62e1fd;
-    border: 0.0625em solid #12c5ed;
-    border-radius: 0.2em;
-    height: 3em;
-    margin: 0.2625em;
-    width: 3em;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    user-select: none;
-
-    &:active {
-        border: 0.0625em solid #06809b;
-    }
-
-    ${(props) => {
-        switch (props.clicked) {
-            case true:
-                return css`
-                    color: #FFFFFF;
-                    background-color: #084856;
-                    border-color: #042127;
-                    pointer-events: none;  
-                    font-family: 'Ubuntu', sans-serif;
-                    font-weight: 500;
-                    margin: 0.2625em; 
-                `;
-            case false:
-                return css`
-                    font-family: 'Ubuntu', sans-serif;
-                    font-weight: 500;
-                    margin: 0.2625em;
-                `
-
-        };
-    }};
-`;
-
-
-const Box_Attempt = styled.section`
-    height: 3em;
-    display: flex;
-
-    pointer-events: ${props => props.block === 'start' ? 'none' : 'auto'}; 
-`;
-
-const Form = styled.form`
-    flex-wrap: wrap;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    * {
-        margin: 0 0.5em;
-    }
-`;
-
-const Attempt = styled.input.attrs({ type: "text" })`
-    &:focus-visible {
-            outline: 0px;
-        }
-`;
-
-const Submit = styled.input.attrs({ type: "submit" })`
-    border-radius: 0.2em;
-    border: none;
-    background-color: #9a9a9a;
-    height: 1.5em;
-`;
